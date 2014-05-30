@@ -1,4 +1,12 @@
+#!/usr/bin/env node
+
+/**
+ * @file
+ * Prototype web-crawler that checks pages for CPR numbers.
+ */
+
 var Crawler = require("crawler").Crawler;
+var argv = require('optimist').argv;
 
 /**
  * CPR modulus 11 calculation.
@@ -52,17 +60,12 @@ var c = new Crawler({
     }
 
     // $ is a jQuery instance scoped to the server-side DOM of the page
-    $("#content a").each(function(index, a) {
+    $('a').each(function(index, a) {
       c.queue(a.href);
     });
   }
 });
 
-
-// Queue just one URL, with default callback
-//c.queue("http://linuxdev.leela");
-
-c.queue([{
-  "html":"<p>This is a test of a CPR: 050289-1253</p>\n<p> test 0707614285</p>"
-}]);
-c.queue('http://linuxdev.leela');
+// Queue URL given as input parameter.
+console.log('Start checking: ' + argv.url);
+c.queue(argv.url);
