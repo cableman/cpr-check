@@ -12,7 +12,7 @@ var domain = argv.domain;
 /**
  * CPR modulus 11 calculation.
  */
-var mod11 = function(value) {
+var mod11 = function mod11(value) {
   var numbers = value.split('');
   var factors = [4, 3, 2, 7, 6, 5, 4, 3, 2];
   var res = 0;
@@ -27,6 +27,21 @@ var mod11 = function(value) {
   return false;
 }
 
+/**
+ * Check that the first 4 numbers are a valided date.
+ */
+var dateCheck = function dateCheck(value) {
+  var day = value.substring(0, 2);
+  var month = value.substring(2, 4);
+  if (day < 32 && month < 12 && day > 0 && month > 0) {
+    return true;
+  }
+  return false;
+}
+
+// Regular expresion to find CPR number patterns in the documents.
+var regex = new RegExp('\\D(\\d{6}-?\\d{4})\\D', "g");
+
 var c = new Crawler({
   "maxConnections": 1,
   "cache": true,
@@ -39,17 +54,14 @@ var c = new Crawler({
       var body = result.body;
 
       // Lookup numbers that may match CPR in the body.
-      // Fix lookbehind: ((?<!\d)(\d{10})(?!\d))|(\d{6}-\d{4})
-      var matches = body.match(/((\d{10})(?!\d))|(\d{6}-\d{4})/gi);
-      if (matches) {
-        // Loop over the matches.
-        var len = matches.length;
-        for (var i = 0; i < len; i++) {
-          var match = matches[i].replace('-', '');
+      var match;
+      while (match = regex.exec(body)) {
+        var number = match[1].replace('-', '');
 
-          // Check the number with modulus 11 check.
-          if (mod11(match)) {
-            console.log('Positive CPR match found at: "' + (result.options.uri || 'HTML') + '" (' + match + ')');
+        // Check the number with modulus 11 check.
+        if (dateCheck(number)) {
+          if (mod11(number)) {
+            console.log('Positive CPR match found at: "' + (result.options.uri || 'HTML') + '" (' + number + ')');
           }
           else {
             // At now there is around 18 CPR's that will fail modulus 11
@@ -57,8 +69,8 @@ var c = new Crawler({
             // - Pr. 11. januar 2011 er der i alt tildelt 18 personnumre uden
             // - modulus 11 - alle til mænd født den 1. januar 1965 eller den
             // - 1. januar 1966.
-            if (match.charAt(4) == 6) {
-              console.log('Posible CPR found at: "' + (result.options.uri || 'HTML') + '" (' + match + ')');
+            if (number.charAt(4) == 6) {
+              console.log('Posible CPR found at: "' + (result.options.uri || 'HTML') + '" (' + number + ')');
             }
           }
         }
