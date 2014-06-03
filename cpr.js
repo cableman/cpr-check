@@ -5,12 +5,12 @@
 
 
 // Regular expresion to find CPR number patterns in the documents.
-var regex = new RegExp('\\D(\\d{6}-?\\d{4})\\D', "g");
+var regex = new RegExp('(?:\\D|^)(\\d{6}-?\\d{4})(?!\\d)', 'gm');
 
 /**
  * CPR modulus 11 calculation.
  */
-exports.mod11 = function mod11(value) {
+var mod11 = function mod11(value) {
   var numbers = value.split('');
   var factors = [4, 3, 2, 7, 6, 5, 4, 3, 2];
   var res = 0;
@@ -24,17 +24,45 @@ exports.mod11 = function mod11(value) {
   }
   return false;
 }
+exports.mod11 = mod11;
 
 /**
  * Check that the first 4 numbers are a valided date.
  */
-exports:dateCheck = function dateCheck(value) {
+var dateCheck = function dateCheck(value) {
   var day = value.substring(0, 2);
   var month = value.substring(2, 4);
   if (day < 32 && month < 12 && day > 0 && month > 0) {
     return true;
   }
   return false;
+}
+exports.dateCheck = dateCheck;
+
+/**
+ * Hepler functio to print result from checkString.
+ *
+ * @param array results
+ *   For information about the format see checkString.
+ */
+exports.printResult = function printResult(results) {
+  if (results instanceof Array) {
+    var len = results.length;
+    for (var i = 0; i < len; i++) {
+      var result = results[i];
+      var msg;
+      switch (result.status) {
+        case 1:
+          msg = 'Positive match with modulus 11 (' + result.cpr + ') at: ' + result.uri;
+          break;
+
+        case 2:
+          msg = 'Posible match (' + result.cpr + ') at: ' + result.uri;
+          break;
+      }
+      console.log(msg);
+    }
+  }
 }
 
 /**

@@ -8,9 +8,11 @@
   "dependencies": {
     "express": "3.4.8",
     "hjs": "*",
+    "request": "2.36.0",
     "crawler": "0.2.5",
     "optimist": "0.6.1",
     "java": "0.3.4",
-    "tika": "0.3.0"
+    "tika": "0.3.0",
+    "tmp": "0.0.23"
   }
 }

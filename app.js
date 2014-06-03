@@ -6,11 +6,20 @@
  */
 
 var Crawler = require("crawler").Crawler;
+
+var tika = require('tika');
+var request = require('request');
+
 var CPR = require("./cpr.js");
+
+var fs = require('fs');
+var tmp = require('tmp');
 
 // Get parameters.
 var argv = require('optimist').argv;
 var domain = argv.domain;
+
+var files = [ 'pdf', 'docx', 'doc'];
 
 var c = new Crawler({
   "maxConnections": 1,
@@ -20,18 +29,45 @@ var c = new Crawler({
   // This will be called for each crawled page
   "callback": function(error, result, $) {
     if (result.body !== undefined) {
-
-      console.log(result.options.uri);
-
       // Check body.
-      CPR.checkString(result.body, (result.options.uri || 'No uri'));
+      var results = CPR.checkString(result.body, (result.options.uri || 'No uri'));
+      CPR.printResult(results);
 
       // $ is a jQuery instance scoped to the server-side DOM of the page
       if ($) {
         $('a').each(function(index, a) {
-          // Check that we don't move outside the domain.
-          if (~a.href.indexOf(domain)) {
-            c.queue(a.href);
+          var url = a.href;
+
+          // Check if URL has a known file extension.
+          if (url.match(/\.doc/)) {
+            // Generate tmp filename.
+            tmp.tmpName(function _tempNameGenerated(err, filename) {
+              if (err) {
+                throw err;
+              }
+
+              // Download file.
+              var r = request(url).pipe(fs.createWriteStream(filename));
+              r.on('close', function () {
+                // Parse file with tika.
+                tika.text(filename, function(err, text) {
+                  if (err) {
+                    throw err;
+                  }
+
+                  // Check for CPR in parsed content.
+                  var results = CPR.checkString(text, (url || 'No uri'));
+                  CPR.printResult(results);
+                });
+              });
+            });
+          }
+          else {
+            // Check that we don't move outside the domain.
+            if (~url.indexOf(domain)) {
+              // Queue the url for crawling.
+              c.queue(url);
+            }
           }
         });
       }
