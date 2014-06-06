@@ -7,17 +7,12 @@
 
 var Crawler = require("crawler").Crawler;
 
-var tika = require('tika');
-var request = require('request');
-
-var CPR = require("./cpr.js");
-
-var fs = require('fs');
-var tmp = require('tmp');
-
 // Get parameters.
 var argv = require('optimist').argv;
 var domain = argv.domain;
+
+var CPR = require('./lib/cpr');
+var cpr = new CPR();
 
 var files = [ 'pdf', 'docx', 'doc'];
 
@@ -30,8 +25,8 @@ var c = new Crawler({
   "callback": function(error, result, $) {
     if (result.body !== undefined) {
       // Check body.
-      var results = CPR.checkString(result.body, (result.options.uri || 'No uri'));
-      CPR.printResult(results);
+      var results = cpr.checkString(result.body, (result.options.uri || 'No uri'));
+      cpr.printResult(results);
 
       // $ is a jQuery instance scoped to the server-side DOM of the page
       if ($) {
@@ -40,27 +35,8 @@ var c = new Crawler({
 
           // Check if URL has a known file extension.
           if (url.match(/\.doc/)) {
-            // Generate tmp filename.
-            tmp.tmpName(function _tempNameGenerated(err, filename) {
-              if (err) {
-                throw err;
-              }
-
-              // Download file.
-              var r = request(url).pipe(fs.createWriteStream(filename));
-              r.on('close', function () {
-                // Parse file with tika.
-                tika.text(filename, function(err, text) {
-                  if (err) {
-                    throw err;
-                  }
-
-                  // Check for CPR in parsed content.
-                  var results = CPR.checkString(text, (url || 'No uri'));
-                  CPR.printResult(results);
-                });
-              });
-            });
+            // Check file.
+            var results = cpr.downloadCheckFile(url);
           }
           else {
             // Check that we don't move outside the domain.
