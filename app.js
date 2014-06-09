@@ -5,14 +5,15 @@
  * Prototype web-crawler that checks pages for CPR numbers.
  */
 
+// Add web-crawler.
 var Crawler = require("crawler").Crawler;
 
 // Get parameters.
 var argv = require('optimist').argv;
 var domain = argv.domain;
 
+// Load CPR check library.
 var CPR = require('./lib/cpr');
-var cpr = new CPR();
 
 var files = [ 'pdf', 'docx', 'doc'];
 
@@ -24,9 +25,11 @@ var c = new Crawler({
   // This will be called for each crawled page
   "callback": function(error, result, $) {
     if (result.body !== undefined) {
+      var cpr = new CPR();
+
       // Check body.
-      var results = cpr.checkString(result.body, (result.options.uri || 'No uri'));
-      cpr.printResult(results);
+      cpr.checkString(result.body, (result.options.uri || 'No uri'));
+      cpr.printResults();
 
       // $ is a jQuery instance scoped to the server-side DOM of the page
       if ($) {
@@ -36,7 +39,10 @@ var c = new Crawler({
           // Check if URL has a known file extension.
           if (url.match(/\.doc/)) {
             // Check file.
-            var results = cpr.downloadCheckFile(url);
+            cpr.downloadCheckFile(url);
+            cpr.on('scanned', function() {
+              cpr.printResults();
+            });
           }
           else {
             // Check that we don't move outside the domain.
