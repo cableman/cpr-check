@@ -1,0 +1,39 @@
+{
+  "tika": {
+    "extensions": [
+      "doc",
+      "docx",
+      "xls",
+      "xlt",
+      "xlsx",
+      "xlsm",
+      "xltx",
+      "xltm",
+      "xlw",
+      "ppt",
+      "pot",
+      "pps",
+      "pptx",
+      "pptm",
+      "potx",
+      "potm",
+      "ppsx",
+      "ppsm",
+      "sldx",
+      "sldm",
+
+      "odt",
+      "ods",
+      "odp",
+      "odb",
+      "odg",
+      "odf",
+
+      "pdf",
+      "epub",
+
+      "txt",
+      "rtf"
+    ]
+  }
+}

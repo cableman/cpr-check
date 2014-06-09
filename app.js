@@ -12,10 +12,24 @@ var Crawler = require("crawler").Crawler;
 var argv = require('optimist').argv;
 var domain = argv.domain;
 
+// Load configuration.
+var config = require('nconf');
+config.file({ file: 'config.json' });
+
+// Build extensions regex.
+var extensions = config.get('tika').extensions;
+var len = extensions.length;
+var regex_str = '';
+for (var i = 0; i < len; i++) {
+  regex_str += '\\.' + extensions[i] + '$|';
+}
+regex_str = regex_str.substring(0, regex_str.length - 1);
+var regex_ext = new RegExp(regex_str, 'g');
+
+// @todo: fix pdf encodeing of "-" -> 070761-­‐4285
+
 // Load CPR check library.
 var CPR = require('./lib/cpr');
-
-var files = [ 'pdf', 'docx', 'doc'];
 
 var c = new Crawler({
   "maxConnections": 1,
@@ -37,7 +51,8 @@ var c = new Crawler({
           var url = a.href;
 
           // Check if URL has a known file extension.
-          if (url.match(/\.doc/)) {
+          if (regex_ext.test(url)) {
+            console.log(url);
             // Check file.
             cpr.downloadCheckFile(url);
             cpr.on('scanned', function() {
