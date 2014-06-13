@@ -31,47 +31,91 @@ var regex_ext = new RegExp(regex_str, 'g');
 // Load CPR check library.
 var CPR = require('./lib/cpr');
 
-var c = new Crawler({
-  "maxConnections": 1,
-  "cache": true,
-  "skipDuplicates": true,
+if (argv.web) {
+  // Web based interface.
+  var path = require('path');
+  var express = require('express');
+  var app = express();
 
-  // This will be called for each crawled page
-  "callback": function(error, result, $) {
-    if (result.body !== undefined) {
-      var cpr = new CPR();
+  // Start the http server.
+  var http = require('http');;
+  var server = http.createServer(app);;
 
-      // Check body.
-      cpr.checkString(result.body, (result.options.uri || 'No uri'));
-      cpr.printResults();
+  // Set express app configuration.
+  app.set('port', config.get('port'));
+  app.set('views', path.join(__dirname, 'views'));
+  app.set('view engine', 'hjs');
+  app.use(express.favicon());
+  app.use(express.json());
+  app.use(express.static(path.join(__dirname, 'public')));
+  app.use(app.router);
+  app.use(express.logger('dev'));
 
-      // $ is a jQuery instance scoped to the server-side DOM of the page
-      if ($) {
-        $('a').each(function(index, a) {
-          var url = a.href;
+  /************************************
+   * Application routes
+   ********************/
+  var routes = require('./routes');
+  app.get('/', routes.login);
 
-          // Check if URL has a known file extension.
-          if (regex_ext.test(url)) {
-            console.log(url);
-            // Check file.
-            cpr.downloadCheckFile(url);
-            cpr.on('scanned', function() {
-              cpr.printResults();
-            });
-          }
-          else {
-            // Check that we don't move outside the domain.
-            if (~url.indexOf(domain)) {
-              // Queue the url for crawling.
-              c.queue(url);
+  // Login
+  app.get('/login', routes.login);
+  // app.post('/login', routes.login_validate);
+
+  /************************************
+   * Start the server
+   ******************/
+  server.listen(app.get('port'), function(){
+    console.log('Express server with socket.io is listening on port ' + app.get('port'));
+  });
+}
+
+
+
+// @todo: move into own file.
+if (argv.url) {
+  // Command line crawler.
+  var c = new Crawler({
+    "maxConnections": 1,
+    "cache": true,
+    "skipDuplicates": true,
+
+    // This will be called for each crawled page
+    "callback": function(error, result, $) {
+      if (result.body !== undefined) {
+        var cpr = new CPR();
+
+        // Check body.
+        cpr.checkString(result.body, (result.options.uri || 'No uri'));
+        cpr.printResults();
+
+        // $ is a jQuery instance scoped to the server-side DOM of the page
+        if ($) {
+          $('a').each(function(index, a) {
+            var url = a.href;
+
+            // Check if URL has a known file extension.
+            if (regex_ext.test(url)) {
+              console.log(url);
+              // Check file.
+              cpr.downloadCheckFile(url);
+              cpr.on('scanned', function() {
+                cpr.printResults();
+              });
             }
-          }
-        });
+            else {
+              // Check that we don't move outside the domain.
+              if (~url.indexOf(domain)) {
+                // Queue the url for crawling.
+                c.queue(url);
+              }
+            }
+          });
+        }
       }
     }
-  }
-});
+  });
 
-// Queue URL given as input parameter.
-console.log('Start checking: ' + argv.url);
-c.queue(argv.url);
+  // Queue URL given as input parameter.
+  console.log('Start checking: ' + argv.url);
+  c.queue(argv.url);
+}

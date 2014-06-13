@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{{ sitename }}</title>
+
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/bootstrap-theme.min.css">
+
+    <link rel='stylesheet' type="text/css" href='css/style.css' />
+  </head>
+  <body data-ng-app="App">
+    <!-- Wrap all page content here -->
+    <div id="wrap" class="container">
+
+      <div data-ng-view=""></div>
+    </div>
+
+    <!-- Footer -->
+    <div id="footer">
+      <div class="container">
+        <p class="text-center">{{ footer }}</p>
+      </div>
+    </div>
+
+    <!-- Javascript libraris -->
+    <script src="js/angular.min.js"></script>
+    <script src="js/angular-route.min.js"></script>
+
+    <script src="js/script.js"></script>
+
+  </body>
+</html>
