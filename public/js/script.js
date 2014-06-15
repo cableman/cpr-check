@@ -17,6 +17,21 @@ App.config(['$routeProvider',
       });
   }]);
 
-App.controller('LoginController', function($scope) {
-  $scope.message = 'Please login...';
+App.controller('LoginController', function($scope, $http) {
+
+  $scope.login = function login(form) {
+    alert('clicked');
+    alert($scope.username);
+    // Get values.
+    var config = {
+      params : {
+        'username': $scope.username,
+        'password': $scope.password
+      },
+    };
+
+
+
+
+  }
 });
