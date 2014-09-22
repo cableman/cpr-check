@@ -4,12 +4,14 @@
   <target name="build" depends="prepare, jslint" description=""/>
 
   <target name="clean" unless="clean.done" description="Cleanup build artifacts">
+    <delete dir="${basedir}/build/logs"/>
     <delete dir="${basedir}/build"/>
     <property name="clean.done" value="true"/>
   </target>
 
   <target name="prepare" unless="prepare.done" depends="clean" description="Prepare for build">
     <mkdir dir="${basedir}/build"/>
+    <mkdir dir="${basedir}/build/logs"/>
     <property name="prepare.done" value="true"/>
   </target>
 
@@ -23,8 +25,8 @@
     <jslint options="white,plusplus,newcap,vars,indent=2,node=true" haltOnFailure="false">
         <!-- Global variables like jquery -->
       <predef>jQuery, setTimeout, history, window, document, require, module, __dirname</predef>
-      <formatter type="junit" destfile="${basedir}/build/" />
-      <formatter type="xml" destfile="${basedir}/build/jslint.xml" />
+      <formatter type="junit" destfile="${basedir}/build/logs/jslint/" />
+      <formatter type="xml" destfile="${basedir}/build/logs/jslint.xml" />
       <fileset dir="${basedir}">
         <include name="**/*.js" />
         <exclude name="**/node_modules/**" />
