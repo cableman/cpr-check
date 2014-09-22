@@ -23,6 +23,7 @@
     <jslint options="white,plusplus,newcap,vars,indent=2,node=true" haltOnFailure="false">
         <!-- Global variables like jquery -->
       <predef>jQuery, setTimeout, history, window, document, require, module, __dirname</predef>
+      <formatter type="junit" destfile="${basedir}/build/" />
       <formatter type="xml" destfile="${basedir}/build/jslint.xml" />
       <fileset dir="${basedir}">
         <include name="**/*.js" />
