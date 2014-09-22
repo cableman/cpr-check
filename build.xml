@@ -1,0 +1,34 @@
+<!--?xml version="1.0" encoding="UTF-8"?-->
+<project name="CPR crawler" default="build">
+
+  <target name="build" depends="prepare, jslint" description=""/>
+
+  <target name="clean" unless="clean.done" description="Cleanup build artifacts">
+    <delete dir="${basedir}/build"/>
+    <property name="clean.done" value="true"/>
+  </target>
+
+  <target name="prepare" unless="prepare.done" depends="clean" description="Prepare for build">
+    <mkdir dir="${basedir}/build"/>
+    <property name="prepare.done" value="true"/>
+  </target>
+
+
+  <taskdef name="jslint"
+           classname="com.googlecode.jslint4java.ant.JSLintTask"
+           classpath="/usr/local/bin/jslint4java.jar" />
+
+  <target name="jslint" depends="prepare">
+    <!-- Options for jslint. -->
+    <jslint options="white,plusplus,newcap,vars,indent=2">
+        <!-- Global variables like jquery -->
+      <predef>jQuery, setTimeout, history, window, document</predef>
+      <formatter type="junit" destfile="${basedir}/build" />
+      <fileset dir="${basedir}">
+        <include name="**/*.js" />
+        <exclude name="**/node_modules/**" />
+      </fileset>
+    </jslint>
+  </target>
+
+</project>
